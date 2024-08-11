@@ -9,15 +9,45 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
-func formatSeconds(s int64) string {
-	h := s / 3600
-	m := (s % 3600) / 60
-	return fmt.Sprintf("%02d hrs %02d mins", h, m)
+// a neatly written function that humanizes a time.Duration
+// (from https://gist.github.com/harshavardhana/327e0577c4fed9211f65)
+func humanizeDuration(duration time.Duration) string {
+	days := int64(duration.Hours() / 24)
+	hours := int64(math.Mod(duration.Hours(), 24))
+	minutes := int64(math.Mod(duration.Minutes(), 60))
+	seconds := int64(math.Mod(duration.Seconds(), 60))
+
+	chunks := []struct {
+		singularName string
+		amount       int64
+	}{
+		{"day", days},
+		{"hour", hours},
+		{"minute", minutes},
+		{"second", seconds},
+	}
+
+	parts := []string{}
+
+	for _, chunk := range chunks {
+		switch chunk.amount {
+		case 0:
+			continue
+		case 1:
+			parts = append(parts, fmt.Sprintf("%d %s", chunk.amount, chunk.singularName))
+		default:
+			parts = append(parts, fmt.Sprintf("%d %ss", chunk.amount, chunk.singularName))
+		}
+	}
+
+	return strings.Join(parts, " ")
 }
 
 func main() {
@@ -63,8 +93,8 @@ func main() {
 
 		if previousLineReboot {
 			outages++
-			duration := formatSeconds(i - previousTimestamp)
-			fmt.Printf("Outage #%02d: %s\n", outages, duration)
+			duration := time.Duration(i-previousTimestamp) * time.Second
+			fmt.Printf("Outage #%02d: %s\n", outages, humanizeDuration(duration))
 			previousLineReboot = false
 		}
 
