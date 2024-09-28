@@ -93,8 +93,15 @@ func main() {
 
 		if previousLineReboot {
 			outages++
+
+			startTime := time.Unix(i, 0)
+
 			duration := time.Duration(i-previousTimestamp) * time.Second
-			fmt.Printf("Outage #%02d: %s\n", outages, humanizeDuration(duration))
+			fmt.Printf("Outage #%02d at %s: %s\n",
+				outages,
+				startTime.Format("3:04PM on Mon Jan 2, 2006"),
+				humanizeDuration(duration),
+			)
 			previousLineReboot = false
 		}
 
